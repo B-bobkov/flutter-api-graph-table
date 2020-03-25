@@ -14,6 +14,7 @@ import 'package:youtimizer/Widgets/CustomGraph.dart';
 import 'package:youtimizer/Pages/PdfView.dart';
 import 'package:youtimizer/Pages/BattingPage.dart';
 import 'package:youtimizer/Pages/Address.dart';
+import 'package:intl/intl.dart';
 
 final bgColor = const Color(0xff99cc33);
 
@@ -41,7 +42,9 @@ class GainScreenState extends State<GainScreen> {
   List<String> x = [];
   List<double> y = [];
   List<String> amount = [];
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  List<bool> btnColor = [];
+
+  // final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -64,13 +67,16 @@ class GainScreenState extends State<GainScreen> {
       print("Year");
       print(res);
 
+      btnColor.add(true);
       for (var i = 0; i < res['year'].length; i++) {
         gain.add(res['gain'][i]);
         year.add(res['year'][i]);
+        btnColor.add(false);
       }
       setState(() {
         gain = gain;
         year = year;
+        btnColor = btnColor;
         // inProgress = false;
       });
       print("Year ${year}");
@@ -129,6 +135,7 @@ class GainScreenState extends State<GainScreen> {
                   uid: widget.uid,
                   amount: amount,
                   parent: this,
+                  btnColor: btnColor,
                 )
               : Container(
                   child: Center(
@@ -147,11 +154,12 @@ class GainScreenView extends StatelessWidget {
   List<String> amount = [];
   List<String> year = [];
   List<String> gain = [];
+  List<bool> btnColor = [];
   int uid;
   Authentication authentication = Authentication();
   GainScreenState parent;
 
-  GainScreenView({this.homeData, this.x, this.y, this.address, this.gain, this.year, this.amount, this.uid, this.parent});
+  GainScreenView({this.homeData, this.x, this.y, this.address, this.gain, this.year, this.amount, this.uid, this.parent, this.btnColor});
 
   List<TableRow> widgets = [];
 
@@ -205,7 +213,7 @@ class GainScreenView extends StatelessWidget {
       addAutomaticKeepAlives: true,
       shrinkWrap: true,
       children: <Widget>[
-        ScreenTitle(title: "Youtimizer Performance"),
+        ScreenTitle(title: "Gain and Deposit"),
         ListView.builder(
           shrinkWrap: true,
           itemCount: year.length,
@@ -213,8 +221,16 @@ class GainScreenView extends StatelessWidget {
             return InkWell(
               onTap: () {
                 fetchData(year[index].substring(0, 4));
+                btnColor = [];
+                for (var i = 0; i < year.length; i++) {
+                  if (i == index) btnColor.add(true);
+                  else btnColor.add(false);
+                }
+                this.parent.setState(() {
+                  this.parent.btnColor = btnColor;
+                });
               },
-              child: ScreenSelect(title: year[index].substring(0, 4) + " Total Gain " + gain[index]),
+              child: ScreenSelect(title: year[index].substring(0, 4) + " Total Gain " + gain[index], color: btnColor[index]),
             ); 
           }
         ),
@@ -287,6 +303,7 @@ class TableView extends StatelessWidget {
   TableView({this.homeData});
 
   List<TableRow> widgets = [];
+  var formatter = new DateFormat('dd/MM/yyyy');
 
   @override
   Widget build(BuildContext context) {
@@ -301,7 +318,7 @@ class TableView extends StatelessWidget {
         widgets.add(
           TableRow(
             children: [
-              rowDesign(data.date, false, false, context, Alignment.center),
+              rowDesign(formatter.format(DateTime.parse(data.date)), false, false, context, Alignment.center),
               rowDesign(data.text, false, false, context, Alignment.centerLeft),
               rowDesign(data.amount.toString(), false, false, context,
                   Alignment.centerRight),

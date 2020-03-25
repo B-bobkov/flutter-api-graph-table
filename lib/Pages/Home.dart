@@ -9,6 +9,7 @@ import 'package:youtimizer/Widgets/ScreenSelect.dart';
 import 'package:youtimizer/Modal/HomeData.dart';
 import 'package:youtimizer/Widgets/CustomGraph.dart';
 import 'package:youtimizer/Pages/PdfView.dart';
+import 'package:intl/intl.dart';
 
 final bgColor = const Color(0xff99cc33);
 
@@ -34,7 +35,8 @@ class HomeState extends State<Home> {
   List<String> performance = [];
   List<String> x = [];
   List<double> y = [];
-  List<String> amount = [];
+  List<String> total_percent = [];
+  List<bool> btnColor = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -57,15 +59,18 @@ class HomeState extends State<Home> {
       print("Year");
       print(res);
 
+      btnColor.add(true);
       for (var i = 0; i < res['year'].length; i++) {
         performance.add(res['performance'][i]);
         year.add(res['year'][i]);
+        btnColor.add(false);
       }
       setState(() {
         performance = performance;
         year = year;
+        btnColor = btnColor;
       });
-      print("Year ${year}");
+      print("btnColor ${btnColor}");
     });
   }
 
@@ -77,12 +82,12 @@ class HomeState extends State<Home> {
       for (var i = 0; i < res['y-axes'].length; i++) {
         y.add(double.parse(res['y-axes'][i]));
         x.add((res['x-axes'][i]).toString());
-        amount.add((res['amount'][i]).toString());
+        total_percent.add((res['total percent'][i]).toString());
       }
       setState(() {
         x = x;
         y = y;
-        amount= amount;
+        total_percent= total_percent;
         inProgress = false;
       });
       print("Y ${y}");
@@ -113,9 +118,10 @@ class HomeState extends State<Home> {
                   address: address,
                   year: year,
                   performance: performance,
-                  amount: amount,
+                  total_percent: total_percent,
                   uid: widget.uid,
                   parent: this,
+                  btnColor: btnColor,
                 )
               : Container(
                   child: Center(
@@ -131,16 +137,17 @@ class HomeView extends StatelessWidget {
   String address;
   List<String> x = [];
   List<double> y = [];
-  List<String> amount = [];
+  List<String> total_percent = [];
   List<String> year = [];
   List<String> performance = [];
   HomeState parent;
   int uid;
   Authentication authentication = Authentication();
+  List<bool> btnColor = [];
 
+  HomeView({this.x, this.y, this.address, this.performance, this.year, this.total_percent, this.parent, this.uid, this.btnColor});
 
-  HomeView({this.x, this.y, this.address, this.performance, this.year, this.amount, this.parent, this.uid});
-  // HomeView({this.homeData, this.x, this.y, this.address, this.performance, this.year, this.amount});
+   List<TableRow> widgets = [];
 
   fetchGraph() async {
     authentication.fetchGraphData(uid).then((res) {
@@ -149,17 +156,17 @@ class HomeView extends StatelessWidget {
 
       x = [];
       y = [];
-      amount = [];
+      total_percent = [];
 
       for (var i = 0; i < res['y-axes'].length; i++) {
         y.add(double.parse(res['y-axes'][i]));
         x.add((res['x-axes'][i]).toString());
-        amount.add((res['amount'][i]).toString());
+        total_percent.add((res['total percent'][i]).toString());
       }
       this.parent.setState(() {
         this.parent.x = x;
         this.parent.y = y;
-        this.parent.amount = amount;
+        this.parent.total_percent = total_percent;
       });
       print("Y ${y}");
     });
@@ -172,17 +179,17 @@ class HomeView extends StatelessWidget {
 
       x = [];
       y = [];
-      amount = [];
+      total_percent = [];
 
       for (var i = 0; i < res['y-axes'].length; i++) {
         y.add(double.parse(res['y-axes'][i]));
         x.add((res['x-axes'][i]).toString());
-        amount.add((res['amount'][i]).toString());
+        total_percent.add((res['total percent'][i]).toString());
       }
       this.parent.setState(() {
         this.parent.x = x;
         this.parent.y = y;
-        this.parent.amount = amount;
+        this.parent.total_percent = total_percent;
       });
       print("Y ${y}");
     });
@@ -191,23 +198,41 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    widgets = [];
+    widgets.add(
+      TableRow(
+        children: [
+          rowDesign('Date', true, Alignment.center),
+          rowDesign('Percent', true, Alignment.centerRight),
+          rowDesign('Total Percent', true, Alignment.centerRight),
+        ],
+      ),
+    );
+    
+    double flexVal = 1.5;
+    if (MediaQuery.of(context).orientation == Orientation.portrait &&
+        MediaQuery.of(context).size.width <= 320) {
+      flexVal = 1.0;
+    }
     // TODO: implement build
     return ListView(
       addAutomaticKeepAlives: true,
       shrinkWrap: true,
       children: <Widget>[
-        Text("My skype address is bolesalavb@gmail.com, can you chat me using Skype?",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20.0,
-          ),
-        ),
-        ScreenTitle(title: "Youtimizer Performance"),
+        ScreenTitle(title: "Club Performance"),
         InkWell(
           onTap: () {
             fetchGraph();
+            btnColor = [];
+            btnColor.add(true);
+            for (var i = 0; i < year.length; i++) {
+              btnColor.add(false);
+            }
+            this.parent.setState(() {
+              this.parent.btnColor = btnColor;
+            });
           },
-          child: ScreenSelect(title: "Default - Last 12 Months"),
+          child: ScreenSelect(title: "Default - Last 12 Months", color: btnColor[0]),
         ),
         ListView.builder(
           addAutomaticKeepAlives: true,
@@ -217,8 +242,17 @@ class HomeView extends StatelessWidget {
             return InkWell(
               onTap: () {
                 fetchYearGraph(year[index]);
+                btnColor = [];
+                btnColor.add(false);
+                for (var i = 0; i < year.length; i++) {
+                  if (i == index) btnColor.add(true);
+                  else btnColor.add(false);
+                }
+                this.parent.setState(() {
+                  this.parent.btnColor = btnColor;
+                });
               },
-              child: ScreenSelect(title: year[index] + " Performance " + performance[index]),
+              child: ScreenSelect(title: year[index] + " Performance " + performance[index], color: btnColor[index + 1],),
             );
           }
         ),
@@ -245,11 +279,19 @@ class HomeView extends StatelessWidget {
               : 300,
           child: Column(
             children: <Widget>[
+              Table(
+                columnWidths: {
+                  0: FlexColumnWidth(0.8),
+                  1: FlexColumnWidth(flexVal), // - is ok
+                  2: FlexColumnWidth(1.1),
+                },
+                children: widgets,
+              ),
               Expanded(
                 child: ListView(
                   addAutomaticKeepAlives: true,
 
-                  children: <Widget>[TableView(x: x, y: y, amount: amount)],
+                  children: <Widget>[TableView(x: x, y: y, total_percent: total_percent)],
                 ),
               )
             ],
@@ -264,6 +306,23 @@ class HomeView extends StatelessWidget {
     );
   }
 
+  /*
+* ,
+* */
+  Widget rowDesign(String name, bool flag, Alignment alignment) {
+    return Container(
+      decoration: BoxDecoration(
+        color: flag ? Colors.black : Colors.transparent,
+      ),
+      alignment: alignment,
+      padding: EdgeInsets.only(top: 10.0, bottom: 10.0, right: 10.0, left: 10.0),
+      child: Text(
+        (name == null) ? '-' : name,
+        style: TextStyle(
+            color: flag ? Colors.white : Colors.white, fontSize: 11.0),
+      ),
+    );
+  }
 }
 
 
@@ -271,11 +330,12 @@ class TableView extends StatelessWidget {
   // HomeData homeData;
   List<String> x = [];
   List<double> y = [];
-  List<String> amount = [];
+  List<String> total_percent = [];
 
-  TableView({this.x, this.y, this.amount});
+  TableView({this.x, this.y, this.total_percent});
 
   List<TableRow> widgets = [];
+  var formatter = new DateFormat('dd/MM/yyyy');
 
   @override
   Widget build(BuildContext context) {
@@ -289,9 +349,9 @@ class TableView extends StatelessWidget {
         widgets.add(
           TableRow(
             children: [
-              rowDesign(x[i], false, false, context, Alignment.center),
-              rowDesign(y[i].toString(), false, false, context, Alignment.centerRight),
-              rowDesign(amount[i], false, false, context,
+              rowDesign(formatter.format(DateTime.parse(x[x.length - 1 - i])), false, false, context, Alignment.center),
+              rowDesign(y[x.length - 1 - i].toString(), false, false, context, Alignment.centerRight),
+              rowDesign(total_percent[x.length - 1 - i], false, false, context,
                   Alignment.centerRight),
             ],
           ),

@@ -146,6 +146,7 @@ class LoginState extends State<Login> {
                   ),
                   Container(
                     child: TextFormField(
+                      autofocus: true,
                       controller: emailCtrl,
                       focusNode: email,
                       textAlign: TextAlign.center,

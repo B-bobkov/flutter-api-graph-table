@@ -37,6 +37,10 @@ class HomeState extends State<Home> {
   List<double> y = [];
   List<String> total_percent = [];
   List<bool> btnColor = [];
+  String currentMonth = '';
+  String lastDate = '';
+  String currentMonthPercent = '';
+  String gainData = '';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
@@ -44,6 +48,7 @@ class HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
 
+    fetchDefualtValue();
     fetchYear();
     fetchGraph();
   }
@@ -52,6 +57,27 @@ class HomeState extends State<Home> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+
+  fetchDefualtValue() async {
+    authentication.fetchDefualtValueData().then((res) {
+      print("Default Value");
+      print(res);
+
+      // btnColor.add(true);
+      // for (var i = 0; i < res['year'].length; i++) {
+      //   performance.add(res['performance'][i]);
+      //   year.add(res['year'][i]);
+      //   btnColor.add(false);
+      // }
+      setState(() {
+        currentMonth = res['current_month'];
+        lastDate = res['last_date'];
+        currentMonthPercent = res['current_month_percent'];
+        gainData = res['gain_data'];
+      });
+      // print("currentMonth ${currentMonth}");
+    });
   }
 
   fetchYear() async {
@@ -122,6 +148,10 @@ class HomeState extends State<Home> {
                   uid: widget.uid,
                   parent: this,
                   btnColor: btnColor,
+                  currentMonth: currentMonth,
+                  lastDate: lastDate,
+                  currentMonthPercent: currentMonthPercent,
+                  gainData: gainData,
                 )
               : Container(
                   child: Center(
@@ -140,14 +170,18 @@ class HomeView extends StatelessWidget {
   List<String> total_percent = [];
   List<String> year = [];
   List<String> performance = [];
+  String currentMonth = '';
+  String lastDate = '';
+  String currentMonthPercent = '';
+  String gainData = '';
   HomeState parent;
   int uid;
   Authentication authentication = Authentication();
   List<bool> btnColor = [];
 
-  HomeView({this.x, this.y, this.address, this.performance, this.year, this.total_percent, this.parent, this.uid, this.btnColor});
+  HomeView({this.x, this.y, this.address, this.performance, this.year, this.total_percent, this.parent, this.uid, this.btnColor, this.currentMonth, this.lastDate, this.currentMonthPercent, this.gainData});
 
-   List<TableRow> widgets = [];
+  List<TableRow> widgets = [];
 
   fetchGraph() async {
     authentication.fetchGraphData(uid).then((res) {
@@ -197,6 +231,9 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color defualtColor;
+    if (btnColor[0]) defualtColor = Color(0xFFFF6500);
+    else defualtColor = Colors.black;
 
     widgets = [];
     widgets.add(
@@ -232,7 +269,86 @@ class HomeView extends StatelessWidget {
               this.parent.btnColor = btnColor;
             });
           },
-          child: ScreenSelect(title: "Default - Last 12 Months", color: btnColor[0]),
+          child: Padding(
+            padding: EdgeInsets.only(top: 5.0),
+            child: Container(
+              color: defualtColor,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Text('ROI in ' + currentMonth.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 5,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(currentMonthPercent.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 36
+                        ),
+                      ),
+                      Text('%',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text('Last Updated ' + lastDate.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 12,
+                  ),
+                  Text('ROI last 12 Months',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(gainData.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 22,
+                        ),
+                      ),
+                      Text('%',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // child: ScreenSelect(title: "Default - Last 12 Months", color: btnColor[0]),
         ),
         ListView.builder(
           addAutomaticKeepAlives: true,

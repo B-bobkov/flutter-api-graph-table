@@ -126,6 +126,35 @@ class Authentication {
   }
 
   /*
+  * Future fetchDefualtValueData() async
+  * Author: Sophie
+  * Created Date & Time:  Apr 2 2020 8:34AM
+  * 
+  * Future: fetchDefaultValueData
+  * Description:  fetch home page data
+  * */
+  Future fetchDefualtValueData() async {
+    try {
+      var response = await http
+          .get('${url}/default_value');
+      if (response.statusCode == 503) {
+        return throw new CustomError("Internal server error.");
+      } else {
+        final data = json.decode(response.body);
+        Response result = Response.fromJSON(data);
+        if (response.statusCode == 200) {
+          return result.responseData.data;
+        } else {
+          if (result.code == 'invalid_user') {
+            throw new CustomError(result.msg);
+          }
+          throw new CustomError("Something went wrong.Please try later.");
+        }
+      }
+    } catch (e) {}
+  }
+
+  /*
   * fetch home page data
   * */
   Future fetchYearGainTableData(uid, year) async {

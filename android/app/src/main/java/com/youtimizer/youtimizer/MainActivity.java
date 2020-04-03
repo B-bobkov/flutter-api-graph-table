@@ -1,4 +1,4 @@
-package com.youtimizer.sophie;
+package com.youtimizer.youtimizerone;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

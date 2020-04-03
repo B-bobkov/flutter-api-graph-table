@@ -59,24 +59,25 @@ class HomeState extends State<Home> {
     super.dispose();
   }
 
+  /*
+    fetchDefualtValue() async
+    Author: Sophie
+    Created Date & Time:  Apr 02 2020 9:31AM
+
+    Function: fetchDefualtValue
+    Description:  fetch defualt value 
+  */
   fetchDefualtValue() async {
     authentication.fetchDefualtValueData().then((res) {
       print("Default Value");
       print(res);
 
-      // btnColor.add(true);
-      // for (var i = 0; i < res['year'].length; i++) {
-      //   performance.add(res['performance'][i]);
-      //   year.add(res['year'][i]);
-      //   btnColor.add(false);
-      // }
       setState(() {
         currentMonth = res['current_month'];
         lastDate = res['last_date'];
         currentMonthPercent = res['current_month_percent'];
         gainData = res['gain_data'];
       });
-      // print("currentMonth ${currentMonth}");
     });
   }
 

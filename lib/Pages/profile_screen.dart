@@ -4,11 +4,34 @@ import 'package:youtimizer/Widgets/Loader.dart';
 import 'package:youtimizer/Modal/Authentication.dart';
 import 'package:youtimizer/Widgets/AppDrawer.dart';
 import 'package:youtimizer/Widgets/ScreenTitle.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 final bgColor = const Color(0xff99cc33);
 
 class ProfileScreen extends StatefulWidget {
   int uid;
+  // ProfileScreen._({this.uid});
+
+  // factory ProfileScreen() => _instance;
+
+  // static final ProfileScreen _instance = ProfileScreen._();
+
+  // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  // bool _initialized = false;
+
+  // Future<void> init() async {
+  //   if (!_initialized) {
+  //     // For iOS request permission first.
+  //     _firebaseMessaging.requestNotificationPermissions();
+  //     _firebaseMessaging.configure();
+
+  //     // For testing purposes print the Firebase Messaging token
+  //     String token = await _firebaseMessaging.getToken();
+  //     print("FirebaseMessaging token: $token");
+      
+  //     _initialized = true;
+  //   }
+  // }
 
   ProfileScreen({this.uid});
 
@@ -24,6 +47,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   Authentication authentication = Authentication();
   bool inProgress = true;
   String email = '';
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override

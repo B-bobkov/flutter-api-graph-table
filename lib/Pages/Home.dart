@@ -1,4 +1,6 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:youtimizer/Modal/notificationItem.dart';
 import 'package:youtimizer/Pages/Login.dart';
 import 'package:youtimizer/Modal/Shared.dart';
 import 'package:youtimizer/Widgets/Loader.dart';
@@ -12,6 +14,15 @@ import 'package:youtimizer/Pages/PdfView.dart';
 import 'package:intl/intl.dart';
 
 final bgColor = const Color(0xff99cc33);
+final Map<String, Item> _items = <String, Item>{};
+Item _itemForMessage(Map<String, dynamic> message) {
+  final dynamic data = message['notification'] ?? message;
+  final String title = data['title'];
+  final String body = data['body'];
+  final Item item = _items.putIfAbsent(title, () => Item(title: title, body: body))
+    ..status = data['status'];
+  return item;
+}
 
 class Home extends StatefulWidget {
   int uid;
@@ -43,6 +54,49 @@ class HomeState extends State<Home> {
   String gainData = '';
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+  Widget _buildDialog(BuildContext context, Item item) {
+    return AlertDialog(
+      title: Text(item.title),
+      content: Text(item.body),
+      actions: <Widget>[
+        FlatButton(
+          child: const Text('CLOSE'),
+          onPressed: () {
+            Navigator.pop(context, false);
+          },
+        ),
+        // FlatButton(
+        //   child: const Text('SHOW'),
+        //   onPressed: () {
+        //     Navigator.pop(context, true);
+        //   },
+        // ),
+      ],
+    );
+  }
+
+  void _showItemDialog(Map<String, dynamic> message) {
+    showDialog<bool>(
+      context: context,
+      builder: (_) => _buildDialog(context, _itemForMessage(message)),
+    ).then((bool shouldNavigate) {
+      if (shouldNavigate == true) {
+        _navigateToItemDetail(message);
+      }
+    });
+  }
+
+  void _navigateToItemDetail(Map<String, dynamic> message) {
+    final Item item = _itemForMessage(message);
+    // Clear away dialogs
+    Navigator.popUntil(context, (Route<dynamic> route) => route is PageRoute);
+    if (!item.route.isCurrent) {
+      Navigator.push(context, item.route);
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -51,6 +105,12 @@ class HomeState extends State<Home> {
     fetchDefualtValue();
     fetchYear();
     fetchGraph();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage: $message");
+        _showItemDialog(message);
+      },
+    );
   }
 
   @override

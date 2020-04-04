@@ -31,12 +31,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class ProfileScreenState extends State<ProfileScreen> {
-  // String _homeScreenText = "Waiting for token...";
-  // bool _topicButtonsDisabled = false;
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  // final TextEditingController _topicController =
-  //     TextEditingController(text: 'topic');
 
   Widget _buildDialog(BuildContext context, Item item) {
     return AlertDialog(
@@ -78,6 +74,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       Navigator.push(context, item.route);
     }
   }
+  
   Shared shared = Shared();
   Authentication authentication = Authentication();
   bool inProgress = true;
@@ -96,29 +93,7 @@ class ProfileScreenState extends State<ProfileScreen> {
         print("onMessage: $message");
         _showItemDialog(message);
       },
-      // onLaunch: (Map<String, dynamic> message) async {
-      //   print("onLaunch: $message");
-      //   _navigateToItemDetail(message);
-      // },
-      // onResume: (Map<String, dynamic> message) async {
-      //   print("onResume: $message");
-      //   _navigateToItemDetail(message);
-      // },
     );
-    // _firebaseMessaging.requestNotificationPermissions(
-    //     const IosNotificationSettings(
-    //         sound: true, badge: true, alert: true, provisional: true));
-    // _firebaseMessaging.onIosSettingsRegistered
-    //     .listen((IosNotificationSettings settings) {
-    //   print("Settings registered: $settings");
-    // });
-    // _firebaseMessaging.getToken().then((String token) {
-    //   assert(token != null);
-    //   setState(() {
-    //     _homeScreenText = "Push Messaging token: $token";
-    //   });
-    //   print(_homeScreenText);
-    // });
   }
 
   @override
@@ -169,12 +144,6 @@ class ProfileScreenState extends State<ProfileScreen> {
                 ),
     );
   }
-  // void _clearTopicText() {
-  //   setState(() {
-  //     _topicController.text = "";
-  //     _topicButtonsDisabled = true;
-  //   });
-  // }
 }
 
 class ProfileScreenView extends StatelessWidget {

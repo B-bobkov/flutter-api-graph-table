@@ -1,3 +1,9 @@
+/*
+  Author: Sophie(bolesalavb@gmail.com)
+  Created Date: Apr 5 2020 12:59AM
+
+  Description:  Class related to push notification item
+*/
 import 'dart:async';
 
 import 'package:flutter/material.dart';

@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:youtimizer/Modal/Shared.dart';
+import 'package:youtimizer/Modal/notificationItem.dart';
 import 'package:youtimizer/Widgets/Loader.dart';
 import 'package:youtimizer/Modal/Authentication.dart';
 import 'package:youtimizer/Widgets/AppDrawer.dart';
@@ -11,38 +10,12 @@ import 'package:youtimizer/Widgets/ScreenTitle.dart';
 final bgColor = const Color(0xff99cc33);
 final Map<String, Item> _items = <String, Item>{};
 Item _itemForMessage(Map<String, dynamic> message) {
-  final dynamic data = message['data'] ?? message;
-  final String itemId = data['id'];
-  final Item item = _items.putIfAbsent(itemId, () => Item(itemId: itemId))
+  final dynamic data = message['notification'] ?? message;
+  final String title = data['title'];
+  final String body = data['body'];
+  final Item item = _items.putIfAbsent(title, () => Item(title: title, body: body))
     ..status = data['status'];
   return item;
-}
-
-class Item {
-  Item({this.itemId});
-  final String itemId;
-
-  StreamController<Item> _controller = StreamController<Item>.broadcast();
-  Stream<Item> get onChanged => _controller.stream;
-
-  String _status;
-  String get status => _status;
-  set status(String value) {
-    _status = value;
-    _controller.add(this);
-  }
-
-  static final Map<String, Route<void>> routes = <String, Route<void>>{};
-  Route<void> get route {
-    final String routeName = '/detail/$itemId';
-    // return routes.putIfAbsent(
-    //   routeName,
-    //   () => MaterialPageRoute<void>(
-    //     settings: RouteSettings(name: routeName),
-    //     builder: (BuildContext context) => DetailPage(itemId),
-    //   ),
-    // );
-  }
 }
 
 class ProfileScreen extends StatefulWidget {
@@ -58,16 +31,17 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class ProfileScreenState extends State<ProfileScreen> {
-  String _homeScreenText = "Waiting for token...";
-  bool _topicButtonsDisabled = false;
+  // String _homeScreenText = "Waiting for token...";
+  // bool _topicButtonsDisabled = false;
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  final TextEditingController _topicController =
-      TextEditingController(text: 'topic');
+  // final TextEditingController _topicController =
+  //     TextEditingController(text: 'topic');
 
   Widget _buildDialog(BuildContext context, Item item) {
     return AlertDialog(
-      content: Text("Item ${item.itemId} has been updated"),
+      title: Text(item.title),
+      content: Text(item.body),
       actions: <Widget>[
         FlatButton(
           child: const Text('CLOSE'),
@@ -75,12 +49,12 @@ class ProfileScreenState extends State<ProfileScreen> {
             Navigator.pop(context, false);
           },
         ),
-        FlatButton(
-          child: const Text('SHOW'),
-          onPressed: () {
-            Navigator.pop(context, true);
-          },
-        ),
+        // FlatButton(
+        //   child: const Text('SHOW'),
+        //   onPressed: () {
+        //     Navigator.pop(context, true);
+        //   },
+        // ),
       ],
     );
   }
@@ -122,29 +96,29 @@ class ProfileScreenState extends State<ProfileScreen> {
         print("onMessage: $message");
         _showItemDialog(message);
       },
-      onLaunch: (Map<String, dynamic> message) async {
-        print("onLaunch: $message");
-        _navigateToItemDetail(message);
-      },
-      onResume: (Map<String, dynamic> message) async {
-        print("onResume: $message");
-        _navigateToItemDetail(message);
-      },
+      // onLaunch: (Map<String, dynamic> message) async {
+      //   print("onLaunch: $message");
+      //   _navigateToItemDetail(message);
+      // },
+      // onResume: (Map<String, dynamic> message) async {
+      //   print("onResume: $message");
+      //   _navigateToItemDetail(message);
+      // },
     );
-    _firebaseMessaging.requestNotificationPermissions(
-        const IosNotificationSettings(
-            sound: true, badge: true, alert: true, provisional: true));
-    _firebaseMessaging.onIosSettingsRegistered
-        .listen((IosNotificationSettings settings) {
-      print("Settings registered: $settings");
-    });
-    _firebaseMessaging.getToken().then((String token) {
-      assert(token != null);
-      setState(() {
-        _homeScreenText = "Push Messaging token: $token";
-      });
-      print(_homeScreenText);
-    });
+    // _firebaseMessaging.requestNotificationPermissions(
+    //     const IosNotificationSettings(
+    //         sound: true, badge: true, alert: true, provisional: true));
+    // _firebaseMessaging.onIosSettingsRegistered
+    //     .listen((IosNotificationSettings settings) {
+    //   print("Settings registered: $settings");
+    // });
+    // _firebaseMessaging.getToken().then((String token) {
+    //   assert(token != null);
+    //   setState(() {
+    //     _homeScreenText = "Push Messaging token: $token";
+    //   });
+    //   print(_homeScreenText);
+    // });
   }
 
   @override
@@ -180,16 +154,6 @@ class ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: false,
       ),
-      // floatingActionButton: FloatingActionButton(
-      //     onPressed: () => _showItemDialog(<String, dynamic>{
-      //       "data": <String, String>{
-      //         "id": "2",
-      //         "status": "out of stock",
-      //       },
-      //     }),
-      //     tooltip: 'Simulate Message',
-      //     child: const Icon(Icons.message),
-      //   ),
       backgroundColor: Colors.black,
       endDrawer: AppDrawer(uid: widget.uid),
       body: inProgress
@@ -203,54 +167,14 @@ class ProfileScreenState extends State<ProfileScreen> {
                     child: Text("No data found",style: TextStyle(color: Colors.white),),
                   )
                 ),
-      // body: Material(
-      //   child: Column(
-      //     children: <Widget>[
-      //       Center(
-      //         child: Text(_homeScreenText),
-      //       ),
-      //       // Row(children: <Widget>[
-      //       //   Expanded(
-      //       //     child: TextField(
-      //       //         controller: _topicController,
-      //       //         onChanged: (String v) {
-      //       //           setState(() {
-      //       //             _topicButtonsDisabled = v.isEmpty;
-      //       //           });
-      //       //         }),
-      //       //   ),
-      //       //   FlatButton(
-      //       //     child: const Text("subscribe"),
-      //       //     onPressed: _topicButtonsDisabled
-      //       //         ? null
-      //       //         : () {
-      //       //             _firebaseMessaging
-      //       //                 .subscribeToTopic(_topicController.text);
-      //       //             _clearTopicText();
-      //       //           },
-      //       //   ),
-      //       //   FlatButton(
-      //       //     child: const Text("unsubscribe"),
-      //       //     onPressed: _topicButtonsDisabled
-      //       //         ? null
-      //       //         : () {
-      //       //             _firebaseMessaging
-      //       //                 .unsubscribeFromTopic(_topicController.text);
-      //       //             _clearTopicText();
-      //       //           },
-      //       //   ),
-      //       // ])
-      //     ],
-      //   ),
-      // ),
     );
   }
-  void _clearTopicText() {
-    setState(() {
-      _topicController.text = "";
-      _topicButtonsDisabled = true;
-    });
-  }
+  // void _clearTopicText() {
+  //   setState(() {
+  //     _topicController.text = "";
+  //     _topicButtonsDisabled = true;
+  //   });
+  // }
 }
 
 class ProfileScreenView extends StatelessWidget {
